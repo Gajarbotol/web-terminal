@@ -1,0 +1,42 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Web Terminal</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/xterm/css/xterm.css">
+    <style>
+        body, html {
+            height: 100%;
+            margin: 0;
+            font-family: Arial, sans-serif;
+        }
+        #terminal {
+            height: 100%;
+        }
+    </style>
+</head>
+<body>
+    <div id="terminal"></div>
+    <script src="https://cdn.jsdelivr.net/npm/xterm/lib/xterm.js"></script>
+    <script src="/socket.io/socket.io.js"></script>
+    <script>
+        const terminal = new Terminal();
+        const socket = io();
+
+        terminal.open(document.getElementById('terminal'));
+
+        // When the terminal sends data, forward it to the server
+        terminal.onData(data => socket.emit('input', data));
+
+        // When the server sends data, write it to the terminal
+        socket.on('output', data => terminal.write(data));
+
+        // Handle window resize
+        window.addEventListener('resize', () => {
+            terminal.fit();
+            socket.emit('resize', { cols: terminal.cols, rows: terminal.rows });
+        });
+    </script>
+</body>
+</html>
